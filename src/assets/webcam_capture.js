@@ -20,7 +20,6 @@ function loadScript(url, callback) {
 function setupWebcam() {
   loadScript("https://cdnjs.cloudflare.com/ajax/libs/webcamjs/1.0.26/webcam.min.js", function() {
     console.log("WebcamJS loaded successfully.");
-
     var cameraBtn = document.getElementById('camera-btn');
     if (cameraBtn) {
       console.log("'camera-btn' button found.");
@@ -31,7 +30,8 @@ function setupWebcam() {
             width: 320,
             height: 240,
             image_format: 'jpeg',
-            jpeg_quality: 90
+            jpeg_quality: 90,
+            facingMode: 'environment' // Use the rear camera
           });
           var cameraModal = document.getElementById('camera-modal');
           if (cameraModal) {
@@ -45,7 +45,6 @@ function setupWebcam() {
           Webcam.snap(function(data_uri) {
             console.log("Image captured.");
             console.log("Data URI size: ", data_uri.length);
-
             // Send the captured image data to the Python backend using an HTTP POST request
             fetch('/capture', {
               method: 'POST',
@@ -62,7 +61,6 @@ function setupWebcam() {
                 <hr />
                 <div style="color: #7FDBFF; font-size: 24px">Predicted Depth: ${data.predicted_depth}</div>
               `;
-
               // Detach the webcam after capturing the image
               Webcam.reset();
             })
