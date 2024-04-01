@@ -16,7 +16,24 @@ from tensorflow.keras.models import Model
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
-
+ 
+def download_model_from_blob(storage_connection_string, container_name, blob_name, download_file_path):
+    blob_service_client = BlobServiceClient.from_connection_string(storage_connection_string)
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=blob_name)
+ 
+    os.makedirs(os.path.dirname(download_file_path), exist_ok=True)
+    with open(download_file_path, "wb") as download_file:
+        download_file.write(blob_client.download_blob().readall())
+ 
+# Use your actual storage connection string, container name, and blob name
+storage_connection_string = os.getenv("STORAGE_CONNECTION_STRING")
+container_name = "modelcv"
+blob_name = "best_model.h5"
+download_file_path = "./best_model.h5"
+ 
+# Download the model file from Azure Blob Storage to the local file system
+download_model_from_blob(storage_connection_string, container_name, blob_name, download_file_path)
+ 
 def load_model():
     base_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
     x = base_model.output
@@ -27,8 +44,10 @@ def load_model():
     model = Model(inputs=base_model.input, outputs=[class_output, depth_output])
     model.load_weights('best_model.h5')
     return model
-
+ 
 model = load_model()
+model.load_weights(download_file_path)
+
 
 app = dash.Dash(__name__, external_stylesheets=['https://codepen.io/chriddyp/pen/bWLwgP.css'])
 server = app.server
